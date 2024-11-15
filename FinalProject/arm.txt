@@ -1,0 +1,25 @@
+from utils.brick import Motor, wait_ready_sensors
+import time
+
+# Initialize the arm motor with reverse orientation
+arm_motor = Motor("D")
+wait_ready_sensors(True)
+
+# Set a reduced power level to limit the current draw
+arm_motor.set_limits(power=40)  # Lower power level to reduce strain
+
+def move_arm_to_positions():
+    try:
+        # Move to -90 degrees
+        arm_motor.set_position(-90)
+        time.sleep(1)  # Wait for the arm to reach the position
+
+        # Move back to 0 degrees
+        arm_motor.set_position(0)
+        time.sleep(1)  # Wait for the arm to reach the position
+
+    except KeyboardInterrupt:
+        arm_motor.set_power(0)  # Stop motor if interrupted
+
+# Run the arm movement function
+move_arm_to_positions()

@@ -1,0 +1,77 @@
+from utils.brick import Motor, ColorSensor, UltrasonicSensor, wait_ready_sensors
+import time
+
+# Initialize motors with reverse orientation
+left_wheel = Motor("A")
+right_wheel = Motor("B")
+arm_motor = Motor("D")
+
+# Initialize sensors
+color_sensor_ground = ColorSensor(2)  # Color sensor facing the ground
+ultrasonic_sensor = UltrasonicSensor(3)  # Assuming ultrasound on port 3
+
+# Ensure sensors are ready before starting
+wait_ready_sensors(True)
+
+# Constants for motor power levels and walking intervals
+WHEEL_POWER = -50  # Reversed for wheel orientation
+ARM_POSITION = -30  # Reversed for arm positioning
+
+def walk():
+    """
+    Basic walking function: moves forward and backward in short steps.
+    """
+    for _ in range(5):  # Perform 5 walking steps as an example
+        # Move forward
+        left_wheel.set_power(WHEEL_POWER)
+        right_wheel.set_power(WHEEL_POWER)
+        time.sleep(0.5)
+
+        # Stop briefly
+        left_wheel.set_power(0)
+        right_wheel.set_power(0)
+        time.sleep(0.2)
+
+        # Move backward
+        left_wheel.set_power(-WHEEL_POWER)
+        right_wheel.set_power(-WHEEL_POWER)
+        time.sleep(0.5)
+
+        # Stop briefly again
+        left_wheel.set_power(0)
+        right_wheel.set_power(0)
+        time.sleep(0.2)
+
+def follow_red_line():
+    """
+    Line-following function using the color sensor to detect a red line and adjust direction.
+    """
+    while True:
+        # Read the color detected by the ground-facing sensor
+        color = color_sensor_ground.get_color_name()
+
+        if color == 'red':
+            # Move forward if on the red line
+            left_wheel.set_power(WHEEL_POWER)
+            right_wheel.set_power(WHEEL_POWER)
+        else:
+            # Adjust direction if off the red line
+            # If robot moves off red line, turn slightly by adjusting wheel power
+            left_wheel.set_power(0)  # Stop left wheel
+            right_wheel.set_power(WHEEL_POWER)  # Move right wheel to turn
+
+        # Brief delay to avoid overwhelming CPU
+        time.sleep(0.1)
+
+try:
+    # Test walking function
+    walk()
+
+    # Switch to line-following mode
+    follow_red_line()
+
+except KeyboardInterrupt:
+    # Stop all motors on program exit
+    left_wheel.set_power(0)
+    right_wheel.set_power(0)
+    arm_motor.set_power(0)
